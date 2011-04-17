@@ -24,8 +24,9 @@ class URI::Dispatch {
     }
     method handler ( $path ) {
         foreach my $route ( @{ $self->routes } ) {
-            return $route->handler
-                if $route->match_path( $path );
+            my( $handler, $options ) = $route->match_path( $path );
+            return( $handler, $options )
+                if defined $handler;
         }
         
         return;

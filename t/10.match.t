@@ -10,13 +10,13 @@ use Test::More			tests => 4;
     $dispatch->add( '/user/', 'user' );
     $dispatch->add( '/', 'homepage' );
     
-    my $handler = $dispatch->handler( '/' );
+    my( $handler, $args ) = $dispatch->handler( '/' );
     ok( $handler eq 'homepage' );
     
-    $handler = $dispatch->handler( '/user/' );
+    ( $handler, $args ) = $dispatch->handler( '/user/' );
     ok( $handler eq 'user' );
     
-    $handler = $dispatch->handler( '/blah/' );
+    ( $handler, $args ) = $dispatch->handler( '/blah/' );
     ok( !defined $handler );
 }
 
@@ -26,6 +26,6 @@ use Test::More			tests => 4;
     $dispatch->add( '/', 'homepage' );
     $dispatch->add( '/', 'homepage-alt' );
     
-    my $handler = $dispatch->handler( '/' );
+    my( $handler, $args ) = $dispatch->handler( '/' );
     ok( $handler eq 'homepage' );
 }
