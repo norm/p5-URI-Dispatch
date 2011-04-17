@@ -1,6 +1,6 @@
 use Modern::Perl;
 use URI::Dispatch;
-use Test::More          tests => 12;
+use Test::More          tests => 23;
 
 
 
@@ -59,4 +59,41 @@ use Test::More          tests => 12;
                 },
             }
         );
+}
+
+# matching custom regexp
+{
+    my $dispatch = URI::Dispatch->new();
+    $dispatch->add( '/about/#( me | this )', 'about-page' );
+    
+    my( $handler, $options ) = $dispatch->handler( '/about/me' );
+    ok( $handler eq 'about-page' );
+    is_deeply( $options->{'args'}, [ 'me' ] );
+    
+    ( $handler, $options ) = $dispatch->handler( '/about/this' );
+    ok( $handler eq 'about-page' );
+    is_deeply( $options->{'args'}, [ 'this' ] );
+    
+    ( $handler, $options ) = $dispatch->handler( '/about/miss' );
+    ok( !defined $handler );
+    
+    ( $handler, $options ) = $dispatch->handler( '/actor/thee' );
+    ok( !defined $handler );
+}
+{
+    my $dispatch = URI::Dispatch->new();
+    $dispatch->add( '/list/#letter:([a-z])', 'az-page' );
+    
+    my( $handler, $options ) = $dispatch->handler( '/list/s' );
+    ok( $handler eq 'az-page' );
+    is_deeply( $options->{'args'}, [ 's' ] );
+    
+    ( $handler, $options ) = $dispatch->handler( '/list/sa' );
+    ok( !defined $handler );
+    
+    ( $handler, $options ) = $dispatch->handler( '/list/S' );
+    ok( !defined $handler );
+    
+    ( $handler, $options ) = $dispatch->handler( '/list/5' );
+    ok( !defined $handler );
 }

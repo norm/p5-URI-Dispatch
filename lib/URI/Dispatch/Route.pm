@@ -22,11 +22,15 @@ class URI::Dispatch::Route {
     );
     my $STRIP_ARGS = qr{
         ^
-            ( [^\#]+ )              # $1: before
-            (?:                     # named param:
+            (?'before' [^\#]+ )
+            (?:
                 \#
-                (?: (\w+) : )?      #   $2: name
-                ( \w+ | \* )        #   $3: param
+                (?: (?'name' \w+ ) : )?
+                (?:
+                    (?'anything' \*           ) |
+                    (?'builtin'  \w+          ) |
+                    (?'regexp'   \( [^\)]+ \) )
+                )
             )?
     }x;
     
@@ -36,27 +40,36 @@ class URI::Dispatch::Route {
         
         # replace (named) params with captures
         while ( $path =~ s{$STRIP_ARGS}{}x ) {
-            my $before  = $1;
-            my $name    = $2 // '';
-            my $param   = $3 // '';
+            my %arg = %+;
             
-            $before =~ s{([^\w])}{\\$1}g;
-            $match .= $before;
-
-            if ( length $param ) {
-                my $builder = "param_$param";
+            $arg{'before'} =~ s{([^\w])}{\\$1}g;
+            $match .= $arg{'before'};
+            
+            next
+                unless defined $arg{'anything'}
+                or defined $arg{'builtin'}
+                or defined $arg{'regexp'};
+            
+            if ( defined $arg{'regexp'} ) {
+                $match .= $arg{'regexp'};
+            }
+            else {
+                my $builtin = $arg{'builtin'};
+                $builtin = 'anything'
+                    if defined $arg{'anything'};
                 
-                $builder = 'param_anything'
-                    if '*' eq $param;
+                my $builder = "param_$builtin";
                 
                 if ( $self->can( $builder ) ) {
+                    my $name = $arg{'name'};
+                    
                     $match .= '('
                             . ( $name ? "?<$name> " : '' )
-                            . $self->$builder( $name )
+                            . $self->$builder()
                             . ')';
                 }
                 else {
-                    throw 'no_param', "No param of type '$param'", $param;
+                    throw 'no_param', "No param of type '$builtin'", $builtin;
                 }
             }
         }
