@@ -23,7 +23,11 @@ class URI::Dispatch::Route {
     my $STRIP_ARGS = qr{
         ^
             ( [^\#]+ )              # $1: before
-            (?: \# ( \w+ ) )?       # $2: a param type
+            (?:                     # named param:
+                \#
+                (?: (\w+) : )?      #   $2: name
+                ( \w+ )             #   $3: param
+            )?
     }x;
     
     method build_match {
@@ -32,15 +36,19 @@ class URI::Dispatch::Route {
         
         while ( $path =~ s{$STRIP_ARGS}{}x ) {
             my $before  = $1;
-            my $param   = $2 // '';
-
+            my $name    = $2 // '';
+            my $param   = $3 // '';
+            
             $match .= $before;
 
             if ( length $param ) {
                 my $builder = "param_$param";
 
                 if ( $self->can( $builder ) ) {
-                    $match .= $self->$builder;
+                    $match .= '('
+                            . ( $name ? "?<$name> " : '' )
+                            . $self->$builder( $name )
+                            . ')';
                 }
                 else {
                     throw 'no_param', "No param of type '$param'", $param;
@@ -83,19 +91,18 @@ class URI::Dispatch::Route {
     
     
     method param_id {
-        return "( [0-9]+ )";
+        return "[0-9]+";
     }
     method param_year {
-        return "( [0-9]{4} )";
+        return "[0-9]{4}";
     }
     method param_month {
-        return
-            "( 01 | 02 | 03 | 04 | 05 | 06 | 07 | 08 | 09 | 10 | 11 | 12 )";
+        return "01 | 02 | 03 | 04 | 05 | 06 | 07 | 08 | 09 | 10 | 11 | 12";
     }
     method param_day {
-        return "( 0[1-9] | [12][0-9] | 30 | 31 )";
+        return "0[1-9] | [12][0-9] | 30 | 31";
     }
     method param_slug {
-        return "( [a-z0-9-]+ )";
+        return "[a-z0-9-]+";
     }
 }
