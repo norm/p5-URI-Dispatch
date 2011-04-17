@@ -104,7 +104,6 @@ class URI::Dispatch::Route {
             push @args, $9 if defined $9;
             
             return (
-                    $self->handler,
                     {
                         args => \@args,
                         keys => \%match,

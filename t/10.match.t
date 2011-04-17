@@ -1,6 +1,6 @@
 use Modern::Perl;
 use URI::Dispatch;
-use Test::More			tests => 4;
+use Test::More      tests => 3;
 
 
 
@@ -18,14 +18,4 @@ use Test::More			tests => 4;
     
     ( $handler, $args ) = $dispatch->handler( '/blah/' );
     ok( !defined $handler );
-}
-
-# multiple routes returns the first match
-{
-    my $dispatch = URI::Dispatch->new();
-    $dispatch->add( '/', 'homepage' );
-    $dispatch->add( '/', 'homepage-alt' );
-    
-    my( $handler, $args ) = $dispatch->handler( '/' );
-    ok( $handler eq 'homepage' );
 }

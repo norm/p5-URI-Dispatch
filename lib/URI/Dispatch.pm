@@ -5,13 +5,13 @@ class URI::Dispatch {
     use URI::Dispatch::Route;
     
     has routes => (
-        isa     => 'ArrayRef',
+        isa     => 'HashRef',
         is      => 'ro',
         builder => 'build_routes',
     );
     
     method build_routes {
-        return [];
+        return {};
     }
     
     
@@ -20,13 +20,15 @@ class URI::Dispatch {
                 path => $path,
                 handler => $handler
             );
-        push @{ $self->routes }, $route;
+        $self->routes->{ $handler } = $route;
     }
     method handler ( $path ) {
-        foreach my $route ( @{ $self->routes } ) {
-            my( $handler, $options ) = $route->match_path( $path );
+        foreach my $handler ( keys %{ $self->routes } ) {
+            my $route   = $self->routes->{ $handler };
+            my $options = $route->match_path( $path );
+            
             return( $handler, $options )
-                if defined $handler;
+                if defined $options;
         }
         
         return;
