@@ -26,7 +26,7 @@ class URI::Dispatch::Route {
             (?:                     # named param:
                 \#
                 (?: (\w+) : )?      #   $2: name
-                ( \w+ )             #   $3: param
+                ( \w+ | \* )        #   $3: param
             )?
     }x;
     
@@ -34,16 +34,21 @@ class URI::Dispatch::Route {
         my $path  = $self->path;
         my $match = '^';
         
+        # replace (named) params with captures
         while ( $path =~ s{$STRIP_ARGS}{}x ) {
             my $before  = $1;
             my $name    = $2 // '';
             my $param   = $3 // '';
             
+            $before =~ s{([^\w])}{\\$1}g;
             $match .= $before;
 
             if ( length $param ) {
                 my $builder = "param_$param";
-
+                
+                $builder = 'param_anything'
+                    if '*' eq $param;
+                
                 if ( $self->can( $builder ) ) {
                     $match .= '('
                             . ( $name ? "?<$name> " : '' )
@@ -55,6 +60,14 @@ class URI::Dispatch::Route {
                 }
             }
         }
+
+        # exchange [] for non-capturing groups
+        my $opening = $match =~ s{\\\[}{(?:}g;
+        my $closing = $match =~ s{\\\]}{)?}g;
+        throw(
+                'unmatched_braces',
+                sprintf( "Unmatched braces found in %s", $self->path ),
+            ) if $opening != $closing;
         
         return "$match\$";
     }
@@ -104,5 +117,8 @@ class URI::Dispatch::Route {
     }
     method param_slug {
         return "[a-z0-9-]+";
+    }
+    method param_anything {
+        return ".+?";
     }
 }
