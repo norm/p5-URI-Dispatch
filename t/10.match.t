@@ -1,6 +1,6 @@
 use Modern::Perl;
-use URI::Dispatch;
 use Test::More      tests => 3;
+use URI::Dispatch;
 
 
 
