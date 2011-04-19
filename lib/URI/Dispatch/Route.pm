@@ -4,6 +4,8 @@ use MooseX::Declare;
 class URI::Dispatch::Route {
     use Ouch    qw( :traditional );
     
+    use constant POSITIONAL_PARAMS => 1;
+    use constant NAMED_PARAMS      => 2;
     has path => (
         isa      => 'Str',
         is       => 'ro',
@@ -22,21 +24,39 @@ class URI::Dispatch::Route {
     );
     my $STRIP_ARGS = qr{
         ^
-            (?'before' [^\#]+ )
             (?:
-                \#
-                (?: (?'name' \w+ ) : )?
+                (?'before' [^\#]+ )
                 (?:
-                    (?'anything' \*           ) |
-                    (?'builtin'  \w+          ) |
-                    (?'regexp'   \( [^\)]+ \) )
+                    \#
+                    (?: (?'name' \w+ ) : )?
+                    (?:
+                             (?'anything' \*      )
+                        |    (?'builtin'  \w+     )
+                        | \( (?'regexp'   [^\)]+  ) \)
+                    )
+                )?
+                |
+                (?:
+                    \#
+                    (?: (?'name' \w+ ) : )?
+                    (?:
+                             (?'anything' \*      )
+                        |    (?'builtin'  \w+     )
+                        | \( (?'regexp'   [^\)]+  ) \)
+                    )
                 )
-            )?
+            )
     }x;
     
+    method BUILD {
+        # trigger the build_match method (catch errors early)
+        my $x = $self->path_match;
+    }
     method build_match {
         my $path  = $self->path;
         my $match = '^';
+        
+        my $param_type = 0;
         
         # replace (named) params with captures
         while ( $path =~ s{$STRIP_ARGS}{}x ) {
@@ -50,28 +70,27 @@ class URI::Dispatch::Route {
                 or defined $arg{'builtin'}
                 or defined $arg{'regexp'};
             
-            if ( defined $arg{'regexp'} ) {
-                $match .= $arg{'regexp'};
+            my $mixed_params = (
+                    (defined $arg{'name'} && $param_type == POSITIONAL_PARAMS)
+                        ||
+                    (!defined $arg{'name'} && $param_type == NAMED_PARAMS)
+                );
+            throw 'cannot_mix', "Cannot mix named and positional parameters"
+                if $mixed_params;
+            
+            if ( $param_type == 0 ) {
+                $param_type = defined $arg{'name'}
+                                  ? NAMED_PARAMS
+                                  : POSITIONAL_PARAMS;
             }
-            else {
-                my $builtin = $arg{'builtin'};
-                $builtin = 'anything'
-                    if defined $arg{'anything'};
-                
-                my $builder = "param_$builtin";
-                
-                if ( $self->can( $builder ) ) {
-                    my $name = $arg{'name'};
-                    
-                    $match .= '('
-                            . ( $name ? "?<$name> " : '' )
-                            . $self->$builder()
-                            . ')';
-                }
-                else {
-                    throw 'no_param', "No param of type '$builtin'", $builtin;
-                }
-            }
+            
+            my $matcher = $self->get_matcher( \%arg );
+            my $name    = $arg{'name'};
+            
+            $match .= '('
+                    . ( $name ? "?<$name> " : '' )
+                    . $matcher
+                    . ')';
         }
 
         # exchange [] for non-capturing groups
@@ -115,6 +134,21 @@ class URI::Dispatch::Route {
     }
     
     
+    method get_matcher ( $arg ) {
+        return $arg->{'regexp'}
+            if defined $arg->{'regexp'};
+        
+        my $builtin = $arg->{'builtin'};
+        $builtin = 'anything'
+            if defined $arg->{'anything'};
+        
+        my $builder = "param_$builtin";
+        
+        return $self->$builder()
+            if $self->can( $builder );
+        
+        throw 'no_param', "No param of type '$builtin'", $builtin;
+    }
     method param_id {
         return "[0-9]+";
     }
