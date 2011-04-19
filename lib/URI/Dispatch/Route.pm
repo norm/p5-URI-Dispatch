@@ -47,6 +47,14 @@ class URI::Dispatch::Route {
                 )
             )
     }x;
+    my $STRIP_OPTIONAL = qr{
+        ^
+            (?:
+                    (?'text' [^\[\]\(\)]+ (?: \( [^\)]+ \) )? )
+                |
+                    (?: \[ (?'optional' [^\]]* ) \] )
+            )
+    }x;
     
     method BUILD {
         # trigger the build_match method (catch errors early)
@@ -131,6 +139,78 @@ class URI::Dispatch::Route {
         }
         
         return;
+    }
+    method reverse_path ( $args? ) {
+        my $path    = $self->path;
+        my $handler = $self->handler;
+        my $reverse;
+        
+        # first, split it into optional and non-optional
+        while ( $path =~ s{$STRIP_OPTIONAL}{}x ) {
+            my $text     = $+{'text'} // $+{'optional'};
+            my $optional = defined $+{'optional'};
+            
+            my $data_missing = 0;
+            my $replace = '';
+            
+            while ( $text =~ s{$STRIP_ARGS}{}x ) {
+                my %arg = %+;
+                
+                my $replace_argument = sub {
+                        my $value = shift;
+                        
+                        if ( defined $value ) {
+                            my $matcher = $self->get_matcher( \%arg );
+                            
+                            throw(
+                                    'wrong_input',
+                                    "Input $value did not match $matcher"
+                                ) unless $value =~ m{^$matcher$}x;
+                            
+                            $replace .= $value;
+                        }
+                        elsif ( $optional ) {
+                            $data_missing = 1;
+                        }
+                        else {
+                            throw 'args_short',
+                                  "Not enough arguments for path $handler";
+                        }
+                    };
+                
+                $replace .= $arg{'before'}
+                    if $arg{'before'};
+                
+                next
+                    unless defined $arg{'anything'}
+                    or defined $arg{'builtin'}
+                    or defined $arg{'regexp'};
+                
+                if ( defined $arg{'name'} ) {
+                    throw(
+                            'args_wrong',
+                            "Wrong argument types for path $handler"
+                        ) unless 'HASH' eq ref $args or '' eq ref $args;
+                    
+                    my $value = $args->{ $arg{'name'} };
+                    &$replace_argument( $value );
+                }
+                else {
+                    throw(
+                            'args_wrong',
+                            "Wrong argument types for path $handler"
+                        ) unless 'ARRAY' eq ref $args or '' eq ref $args;
+                    
+                    my $value = shift @$args;
+                    &$replace_argument( $value );
+                }
+            }
+            
+            $reverse .= $replace
+                unless $data_missing;
+        }
+        
+        return $reverse;
     }
     
     

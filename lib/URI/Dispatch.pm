@@ -33,4 +33,10 @@ class URI::Dispatch {
         
         return;
     }
+    method url ( $name, $args? ) {
+        my $route = $self->routes->{ $name };
+        return unless defined $route;
+        
+        return $route->reverse_path( $args );
+    }
 }
