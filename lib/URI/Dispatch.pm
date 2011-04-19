@@ -1,8 +1,12 @@
 use Modern::Perl;
 use MooseX::Declare;
 
+use version;
+
 class URI::Dispatch {
     use URI::Dispatch::Route;
+    use version;
+    our $VERSION = qv( 0.5 );
     
     has routes => (
         isa     => 'HashRef',
