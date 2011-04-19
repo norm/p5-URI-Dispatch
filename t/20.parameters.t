@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More      tests => 28;
+use Test::More      tests => 32;
 use URI::Dispatch;
 
 
@@ -18,6 +18,19 @@ use URI::Dispatch;
     
     ( $handler, $captures ) = $dispatch->handler( '/user/5a' );
     ok( !defined $handler );
+}
+{
+    my $dispatch = URI::Dispatch->new();
+    $dispatch->add( '/bookmark/#hex', 'bookmark' );
+    
+    my( $handler, $captures ) = $dispatch->handler( '/bookmark/C5d4b0' );
+    ok( $handler eq 'bookmark' );
+    is_deeply( $captures, [ 'C5d4b0' ] );
+    
+    ( $handler, $captures ) = $dispatch->handler( '/user/abcdefg' );
+    ok( !defined $handler );
+    
+    ( $handler, $captures ) = $dispatch->handler( '/user/dead-beef' );
     ok( !defined $handler );
 }
 {

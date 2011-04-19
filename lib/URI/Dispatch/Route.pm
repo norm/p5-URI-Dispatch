@@ -228,6 +228,9 @@ class URI::Dispatch::Route {
     method param_id {
         return "[0-9]+";
     }
+    method param_hex {
+        return "[A-Fa-f0-9]+";
+    }
     method param_year {
         return "[0-9]{4}";
     }
