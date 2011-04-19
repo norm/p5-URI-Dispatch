@@ -9,11 +9,11 @@ use URI::Dispatch;
     my $dispatch = URI::Dispatch->new();
     $dispatch->add( '/#year-#month-#day', 'calendar' );
     
-    my( $handler, $options ) = $dispatch->handler( '/2011-05-18' );
+    my( $handler, $captures ) = $dispatch->handler( '/2011-05-18' );
     ok( $handler eq 'calendar' );
-    is_deeply( $options->{'args'}, [ '2011', '05', '18' ] );
+    is_deeply( $captures, [ '2011', '05', '18' ] );
     
-    ( $handler, $options ) = $dispatch->handler( '/2011-05-bob' );
+    ( $handler, $captures ) = $dispatch->handler( '/2011-05-bob' );
     ok( !defined $handler );
 }
 
@@ -22,13 +22,13 @@ use URI::Dispatch;
     my $dispatch = URI::Dispatch->new();
     $dispatch->add( '/#year/#month[/#day]', 'calendar' );
     
-    my( $handler, $options ) = $dispatch->handler( '/2011/05/18' );
+    my( $handler, $captures ) = $dispatch->handler( '/2011/05/18' );
     ok( $handler eq 'calendar' );
-    is_deeply( $options->{'args'}, [ '2011', '05', '18' ] );
+    is_deeply( $captures, [ '2011', '05', '18' ] );
     
-    ( $handler, $options ) = $dispatch->handler( '/2011/05' );
+    ( $handler, $captures ) = $dispatch->handler( '/2011/05' );
     ok( $handler eq 'calendar' );
-    is_deeply( $options->{'args'}, [ '2011', '05', ] );
+    is_deeply( $captures, [ '2011', '05', ] );
 }
 
 # matching anything
@@ -36,27 +36,24 @@ use URI::Dispatch;
     my $dispatch = URI::Dispatch->new();
     $dispatch->add( '/#id/#*', 'article' );
     
-    my( $handler, $options ) = $dispatch->handler( '/5/any/old/thing' );
+    my( $handler, $captures ) = $dispatch->handler( '/5/any/old/thing' );
     ok( $handler eq 'article' );
-    is_deeply( $options->{'args'}, [ '5', 'any/old/thing' ] );
+    is_deeply( $captures, [ '5', 'any/old/thing' ] );
     
-    ( $handler, $options ) = $dispatch->handler( '/5' );
+    ( $handler, $captures ) = $dispatch->handler( '/5' );
     ok( !defined $handler );
 }
 {
     my $dispatch = URI::Dispatch->new();
     $dispatch->add( '/#id:id/#extra:*', 'article' );
     
-    my( $handler, $options ) = $dispatch->handler( '/5/any/old/thing' );
+    my( $handler, $captures ) = $dispatch->handler( '/5/any/old/thing' );
     ok( $handler eq 'article' );
     is_deeply(
-            $options,
+            $captures,
             {
-                args => [ '5', 'any/old/thing' ],
-                keys => {
-                    id    => '5',
-                    extra => 'any/old/thing',
-                },
+                id    => '5',
+                extra => 'any/old/thing',
             }
         );
 }
@@ -66,34 +63,34 @@ use URI::Dispatch;
     my $dispatch = URI::Dispatch->new();
     $dispatch->add( '/about/#( me | this )', 'about-page' );
     
-    my( $handler, $options ) = $dispatch->handler( '/about/me' );
+    my( $handler, $captures ) = $dispatch->handler( '/about/me' );
     ok( $handler eq 'about-page' );
-    is_deeply( $options->{'args'}, [ 'me' ] );
+    is_deeply( $captures, [ 'me' ] );
     
-    ( $handler, $options ) = $dispatch->handler( '/about/this' );
+    ( $handler, $captures ) = $dispatch->handler( '/about/this' );
     ok( $handler eq 'about-page' );
-    is_deeply( $options->{'args'}, [ 'this' ] );
+    is_deeply( $captures, [ 'this' ] );
     
-    ( $handler, $options ) = $dispatch->handler( '/about/miss' );
+    ( $handler, $captures ) = $dispatch->handler( '/about/miss' );
     ok( !defined $handler );
     
-    ( $handler, $options ) = $dispatch->handler( '/actor/thee' );
+    ( $handler, $captures ) = $dispatch->handler( '/actor/thee' );
     ok( !defined $handler );
 }
 {
     my $dispatch = URI::Dispatch->new();
     $dispatch->add( '/list/#letter:([a-z])', 'az-page' );
     
-    my( $handler, $options ) = $dispatch->handler( '/list/s' );
+    my( $handler, $captures ) = $dispatch->handler( '/list/s' );
     ok( $handler eq 'az-page' );
-    is_deeply( $options->{'args'}, [ 's' ] );
+    is_deeply( $captures, { letter => 's' } );
     
-    ( $handler, $options ) = $dispatch->handler( '/list/sa' );
+    ( $handler, $captures ) = $dispatch->handler( '/list/sa' );
     ok( !defined $handler );
     
-    ( $handler, $options ) = $dispatch->handler( '/list/S' );
+    ( $handler, $captures ) = $dispatch->handler( '/list/S' );
     ok( !defined $handler );
     
-    ( $handler, $options ) = $dispatch->handler( '/list/5' );
+    ( $handler, $captures ) = $dispatch->handler( '/list/5' );
     ok( !defined $handler );
 }

@@ -118,8 +118,9 @@ class URI::Dispatch::Route {
         
         if ( $path =~ m{$match}x ) {
             my %match = %+;
+            return \%match if %match;
+            
             my @args;
-
             push @args, $1 if defined $1;
             push @args, $2 if defined $2;
             push @args, $3 if defined $3;
@@ -130,12 +131,7 @@ class URI::Dispatch::Route {
             push @args, $8 if defined $8;
             push @args, $9 if defined $9;
             
-            return (
-                    {
-                        args => \@args,
-                        keys => \%match,
-                    },
-                );
+            return \@args;
         }
         
         return;

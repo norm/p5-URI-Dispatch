@@ -9,93 +9,94 @@ use URI::Dispatch;
     my $dispatch = URI::Dispatch->new();
     $dispatch->add( '/user/#id', 'user' );
     
-    my( $handler, $options ) = $dispatch->handler( '/user/5' );
+    my( $handler, $captures ) = $dispatch->handler( '/user/5' );
     ok( $handler eq 'user' );
-    is_deeply( $options->{'args'}, [ '5' ] );
+    is_deeply( $captures, [ '5' ] );
     
-    ( $handler, $options ) = $dispatch->handler( '/user/bob' );
+    ( $handler, $captures ) = $dispatch->handler( '/user/bob' );
     ok( !defined $handler );
     
-    ( $handler, $options ) = $dispatch->handler( '/user/5a' );
+    ( $handler, $captures ) = $dispatch->handler( '/user/5a' );
+    ok( !defined $handler );
     ok( !defined $handler );
 }
 {
     my $dispatch = URI::Dispatch->new();
     $dispatch->add( '/#year', 'by-year' );
     
-    my( $handler, $options ) = $dispatch->handler( '/2011' );
+    my( $handler, $captures ) = $dispatch->handler( '/2011' );
     ok( $handler eq 'by-year' );
-    is_deeply( $options->{'args'}, [ '2011' ] );
+    is_deeply( $captures, [ '2011' ] );
     
-    ( $handler, $options ) = $dispatch->handler( '/bob' );
+    ( $handler, $captures ) = $dispatch->handler( '/bob' );
     ok( !defined $handler );
     
-    ( $handler, $options ) = $dispatch->handler( '/201' );
+    ( $handler, $captures ) = $dispatch->handler( '/201' );
     ok( !defined $handler );
     
-    ( $handler, $options ) = $dispatch->handler( '/20111' );
+    ( $handler, $captures ) = $dispatch->handler( '/20111' );
     ok( !defined $handler );
 }
 {
     my $dispatch = URI::Dispatch->new();
     $dispatch->add( '/#month', 'by-month' );
     
-    my( $handler, $options ) = $dispatch->handler( '/05' );
+    my( $handler, $captures ) = $dispatch->handler( '/05' );
     ok( $handler eq 'by-month' );
-    is_deeply( $options->{'args'}, [ '05' ] );
+    is_deeply( $captures, [ '05' ] );
     
-    ( $handler, $options ) = $dispatch->handler( '/13' );
+    ( $handler, $captures ) = $dispatch->handler( '/13' );
     ok( !defined $handler );
     
-    ( $handler, $options ) = $dispatch->handler( '/111' );
+    ( $handler, $captures ) = $dispatch->handler( '/111' );
     ok( !defined $handler );
     
-    ( $handler, $options ) = $dispatch->handler( '/00' );
+    ( $handler, $captures ) = $dispatch->handler( '/00' );
     ok( !defined $handler );
 }
 {
     my $dispatch = URI::Dispatch->new();
     $dispatch->add( '/#day', 'by-day' );
     
-    my( $handler, $options ) = $dispatch->handler( '/31' );
+    my( $handler, $captures ) = $dispatch->handler( '/31' );
     ok( $handler eq 'by-day' );
-    is_deeply( $options->{'args'}, [ '31' ] );
+    is_deeply( $captures, [ '31' ] );
     
-    ( $handler, $options ) = $dispatch->handler( '/32' );
+    ( $handler, $captures ) = $dispatch->handler( '/32' );
     ok( !defined $handler );
     
-    ( $handler, $options ) = $dispatch->handler( '/00' );
+    ( $handler, $captures ) = $dispatch->handler( '/00' );
     ok( !defined $handler );
 }
 {
     my $dispatch = URI::Dispatch->new();
     $dispatch->add( '/#year/#month/#day', 'calendar' );
     
-    my( $handler, $options ) = $dispatch->handler( '/2011/05/18' );
+    my( $handler, $captures ) = $dispatch->handler( '/2011/05/18' );
     ok( $handler eq 'calendar' );
-    is_deeply( $options->{'args'}, [ '2011', '05', '18' ] );
+    is_deeply( $captures, [ '2011', '05', '18' ] );
     
-    ( $handler, $options ) = $dispatch->handler( '/2011/05' );
+    ( $handler, $captures ) = $dispatch->handler( '/2011/05' );
     ok( !defined $handler );
 }
 {
     my $dispatch = URI::Dispatch->new();
     $dispatch->add( '/bookmark/#slug', 'bookmark' );
     
-    my( $handler, $options ) = $dispatch->handler( '/bookmark/1' );
+    my( $handler, $captures ) = $dispatch->handler( '/bookmark/1' );
     ok( $handler eq 'bookmark' );
-    is_deeply( $options->{'args'}, [ '1' ] );
+    is_deeply( $captures, [ '1' ] );
     
-    ( $handler, $options ) = $dispatch->handler( '/bookmark/link-summary' );
+    ( $handler, $captures ) = $dispatch->handler( '/bookmark/link-summary' );
     ok( $handler eq 'bookmark' );
-    is_deeply( $options->{'args'}, [ 'link-summary' ] );
+    is_deeply( $captures, [ 'link-summary' ] );
     
-    ( $handler, $options ) = $dispatch->handler( '/bookmark/' );
+    ( $handler, $captures ) = $dispatch->handler( '/bookmark/' );
     ok( !defined $handler );
     
-    ( $handler, $options ) = $dispatch->handler( '/bookmark/NO-CAPS' );
+    ( $handler, $captures ) = $dispatch->handler( '/bookmark/NO-CAPS' );
     ok( !defined $handler );
     
-    ( $handler, $options ) = $dispatch->handler( '/bookmark/no_underscore' );
+    ( $handler, $captures ) = $dispatch->handler( '/bookmark/no_underscore' );
     ok( !defined $handler );
 }
