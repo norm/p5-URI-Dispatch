@@ -226,24 +226,42 @@ class URI::Dispatch::Route {
         throw 'no_param', "No param of type '$builtin'", $builtin;
     }
     method param_id {
-        return "[0-9]+";
+        return '[0-9]+';
     }
     method param_hex {
-        return "[A-Fa-f0-9]+";
+        return '[A-Fa-f0-9]+';
+    }
+    method param_date {
+        return '[0-9]{4} \- '
+             . '(?: 0[1-9] | 10 | 11 | 12 ) \- '
+             . '(?: 0[1-9] | [12][0-9] | 30 | 31 )';
     }
     method param_year {
-        return "[0-9]{4}";
+        return '[0-9]{4}';
     }
     method param_month {
-        return "01 | 02 | 03 | 04 | 05 | 06 | 07 | 08 | 09 | 10 | 11 | 12";
+        return '0[1-9] | 10 | 11 | 12';
     }
     method param_day {
-        return "0[1-9] | [12][0-9] | 30 | 31";
+        return '0[1-9] | [12][0-9] | 30 | 31';
+    }
+    method param_time {
+        return '(?: [01][0-9] | 2[0123] ) '
+             . '[:\.-] [0-5][0-9] [:\.-] [0-5][0-9]';
+    }
+    method param_hour {
+        return '[01][0-9] | 2[0123]'
+    }
+    method param_minute {
+        return '[0-5][0-9]';
+    }
+    method param_second {
+        return '[0-5][0-9]';
     }
     method param_slug {
-        return "[a-z0-9-]+";
+        return '[a-z0-9-]+';
     }
     method param_anything {
-        return ".+?";
+        return '.+?';
     }
 }

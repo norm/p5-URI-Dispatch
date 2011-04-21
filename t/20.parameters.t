@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More      tests => 32;
+use Test::More      tests => 47;
 use URI::Dispatch;
 
 
@@ -31,6 +31,23 @@ use URI::Dispatch;
     ok( !defined $handler );
     
     ( $handler, $captures ) = $dispatch->handler( '/user/dead-beef' );
+    ok( !defined $handler );
+}
+{
+    my $dispatch = URI::Dispatch->new();
+    $dispatch->add( '/calendar/#date', 'calendar' );
+    
+    my( $handler, $captures ) = $dispatch->handler( '/calendar/2011-05-12' );
+    ok( $handler eq 'calendar' );
+    is_deeply( $captures, [ '2011-05-12' ] );
+    
+    ( $handler, $captures ) = $dispatch->handler( '/calendar/2000-00-00' );
+    ok( !defined $handler );
+    
+    ( $handler, $captures ) = $dispatch->handler( '/calendar/2000-01-32' );
+    ok( !defined $handler );
+    
+    ( $handler, $captures ) = $dispatch->handler( '/calendar/2000-13-31' );
     ok( !defined $handler );
 }
 {
@@ -91,6 +108,41 @@ use URI::Dispatch;
     
     ( $handler, $captures ) = $dispatch->handler( '/2011/05' );
     ok( !defined $handler );
+}
+{
+    my $dispatch = URI::Dispatch->new();
+    $dispatch->add( '/at/#time', 'time' );
+    
+    my( $handler, $captures ) = $dispatch->handler( '/at/18:42:23' );
+    ok( $handler eq 'time' );
+    is_deeply( $captures, [ '18:42:23' ] );
+    
+    ( $handler, $captures ) = $dispatch->handler( '/at/25:00:00' );
+    ok( !defined $handler );
+    
+    ( $handler, $captures ) = $dispatch->handler( '/at/10:65:00' );
+    ok( !defined $handler );
+    
+    ( $handler, $captures ) = $dispatch->handler( '/at/10:55:65' );
+    ok( !defined $handler );
+}
+{
+    my $dispatch = URI::Dispatch->new();
+    $dispatch->add( '/at/#hour:#minute:#second', 'time' );
+    
+    my( $handler, $captures ) = $dispatch->handler( '/at/18:42:23' );
+    ok( $handler eq 'time' );
+    is_deeply( $captures, [ '18', '42', '23' ] );
+    
+    ( $handler, $captures ) = $dispatch->handler( '/at/25:00:00' );
+    ok( !defined $handler );
+    
+    ( $handler, $captures ) = $dispatch->handler( '/at/10:65:00' );
+    ok( !defined $handler );
+    
+    ( $handler, $captures ) = $dispatch->handler( '/at/10:55:65' );
+    ok( !defined $handler );
+    
 }
 {
     my $dispatch = URI::Dispatch->new();

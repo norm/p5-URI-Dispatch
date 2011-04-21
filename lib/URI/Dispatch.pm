@@ -114,6 +114,26 @@ matches numbers 01 through 12
 
 matches numbers 01 through 31
 
+=item B<date>
+
+matches year, month and day separated by dashes
+
+=item B<hour>
+
+matches numbers 00 through 23
+
+=item B<minute>
+
+matches numbers 00 through 59
+
+=item B<second>
+
+matches numbers 00 through 59
+
+=item B<time>
+
+matches hour, minute and second separated by any of colons, periods or dashes
+
 =item B<*>
 
 matches anything
