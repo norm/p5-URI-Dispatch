@@ -32,6 +32,12 @@ class URI::Dispatch {
         my $path   = $argument;
         my $request;
         
+        if ( 'Plack::Request' eq ref $argument ) {
+            $method  = lc $argument->method;
+            $path    = $argument->path;
+            $request = $argument;
+        }
+        
         my( $handler, $options ) = $self->handler( $path );
         
         throw 404
