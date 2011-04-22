@@ -4,6 +4,7 @@ use MooseX::Declare;
 use version;
 
 class URI::Dispatch {
+    use Ouch        qw( :traditional );
     use URI::Dispatch::Route;
     use version;
     our $VERSION = qv( 0.5 );
@@ -25,6 +26,21 @@ class URI::Dispatch {
                 handler => $handler
             );
         $self->routes->{ $handler } = $route;
+    }
+    method dispatch ( $argument ) {
+        my $method = 'get';
+        my $path   = $argument;
+        my $request;
+        
+        my( $handler, $options ) = $self->handler( $path );
+        
+        throw 404
+            unless defined $handler;
+        
+        my $sub = "${handler}::${method}";
+        
+        no strict 'refs';
+        return $sub->( $options, $request );
     }
     method handler ( $path ) {
         foreach my $handler ( keys %{ $self->routes } ) {
