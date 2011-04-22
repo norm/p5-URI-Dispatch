@@ -1,6 +1,6 @@
 use Modern::Perl;
 use Ouch            qw( :traditional );
-use Test::More      tests => 8;
+use Test::More      tests => 10;
 use URI::Dispatch;
 
 
@@ -59,4 +59,14 @@ use URI::Dispatch;
         $dispatch->add( '/#year/#month/#day:day', 'calendar' );
     };
     ok( catch 'cannot_mix' );
+}
+
+# actual colons in the path don't trip things
+{
+    my $dispatch = URI::Dispatch->new();
+    $dispatch->add( '/time/#hour:#minute', 'time' );
+    
+    my( $handler, $captures ) = $dispatch->handler( '/time/15:38' );
+    ok( $handler eq 'time' );
+    is_deeply( $captures, [ '15', '38' ] );
 }
