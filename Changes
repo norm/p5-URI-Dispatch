@@ -1,0 +1,8 @@
+Revision history for URI::Dispatch.
+
+1.0     Apr 22 2011
+    
+    -   Initial release. Includes functionality to add path handlers, 
+        determine which handler should deal with a given path, automatically
+        dispatch to that handler, and the reverse -- construct a valid path
+        given arguments.

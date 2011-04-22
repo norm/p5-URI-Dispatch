@@ -1,13 +1,11 @@
 use Modern::Perl;
 use MooseX::Declare;
 
-use version;
-
 class URI::Dispatch {
     use Ouch        qw( :traditional );
     use URI::Dispatch::Route;
     use version;
-    our $VERSION = qv( 0.5 );
+    our $VERSION = qv( 1.0 );
     
     has routes => (
         isa     => 'HashRef',
@@ -68,7 +66,7 @@ class URI::Dispatch {
 
 =head1 NAME
 
-B<URI::Dispatch> - determine which code to execute based upon path
+URI::Dispatch - determine which code to execute based upon path
 
 =head1 SYNOPSIS
 

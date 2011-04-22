@@ -10,3 +10,5 @@ t/25.named_parameters.t
 t/30.grouping.t
 t/50.build.t
 t/55.build_check.t
+t/dispatch.t
+t/plack.t

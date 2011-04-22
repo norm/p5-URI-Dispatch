@@ -1,0 +1,28 @@
+URI::Dispatch 1.0
+=================
+URI::Dispatch is a dispatcher for handling URI paths, most commonly in a
+web framework.
+
+Includes functionality to add path handlers, determine which handler should
+deal with a given path, automatically dispatch to that handler, and the
+reverse -- construct a valid path given arguments.
+
+It also doesn't use valid URI path characters for it's functionality, unlike
+most others.
+
+
+Dependencies
+------------
+- Perl v5.10 or better
+- Modern::Perl
+- Plack
+- Ouch
+- MooseX::Declare
+
+
+Copyright and license
+---------------------
+Copyright (c) 2011 Mark Norman Francis <norm@cackhanded.net>.
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.

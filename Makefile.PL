@@ -13,8 +13,10 @@ WriteMakefile(
     PREREQ_PM => {
         'Modern::Perl'    => 0,
         'version'         => 0,
+        'HTTP::Message'   => 0,
         'MooseX::Declare' => 0,
-        'Ouch'            => 0.03,
+        'Ouch'            => 0,
+        'Plack'           => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'URI-Dispatch-*' },
