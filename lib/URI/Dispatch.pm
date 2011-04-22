@@ -73,24 +73,27 @@ B<URI::Dispatch> - determine which code to execute based upon path
 =head1 SYNOPSIS
 
     my $dispatch = URI::Dispatch->new();
-    $dispatch->add( '/', 'homepage' );
+    $dispatch->add( '/', 'Homepage' );
     
     # common matching patterns are available
-    $dispatch->add( '/user/#id', 'profile' );
+    $dispatch->add( '/user/#id', 'Profile' );
     
     # optional parts of the path
-    $dispatch->add( '/article/#id[/#slug]', 'article' );
+    $dispatch->add( '/article/#id[/#slug]', 'Article' );
     
     # named captures
-    $dispatch->add( '/tag/#name:slug', 'tag' );
+    $dispatch->add( '/tag/#name:slug', 'Tag' );
     
     # use a custom regexp
-    $dispatch->add( '/a-z/#letter:([a-z])', 'az-page' );
+    $dispatch->add( '/a-z/#letter:([a-z])', 'AZ::Page' );
     
     # pass in a path and determine what matches
     my( $handler, $options) 
         = $dispatch->handler( '/article/5/awesome-article' );
-    # handler='article', options=['5','awesome-article']
+    # handler='Article', options=['5','awesome-article']
+    
+    # automatically calls Tag::get (as that matches the path)
+    my $response = $dispatch->dispatch( '/tag/perl' );
     
     # construct paths
     my $uri = $dispatch->url( 'article', [ '1', 'some-article' ] );
@@ -100,8 +103,10 @@ B<URI::Dispatch> - determine which code to execute based upon path
 
 =head2 add( I<path>, I<handler> )
 
-Add I<path> that can be handled by I<handler>. The path string is a literal
-string, with special markers.
+Add I<path> that can be handled by I<handler>. The I<$path> string will be
+matched literally, except for the special markers described below. They have
+been specially chosen because they are not legal URI path characters, so
+should never break your actual chosen URI scheme.
 
 =over
 
@@ -214,12 +219,50 @@ or a hash if the captures were named. For example, this code:
     my( $handler, $captures )
         = $dispatch->handler( '/article/5/awesome-article' );
 
-will return a data structure equivalent to:    
+would return C<$captures> set to:
 
-    $captures = {
+    {
         key   => '5',
         title => 'awesome-article',
-    };
+    }
+
+=head2 dispatch( I<path or request> )
+
+Call the handler that matches the given argument, which can either be a
+simple string that represents a path, or it can be a L<Plack::Request>
+object.
+
+The handler is interpreted as a class, and the HTTP method is the subroutine
+within the class to call.
+
+=head3 path string
+
+When C<dispatch()> is called with a simple string, the method is assumed
+to be an HTTP GET. For example:
+ 
+    $dispatch->add( '/tag/#name:slug', 'Tags::SingleTag' );
+    my $response = $dispatch->dispatch( '/tag/perl' );
+
+would set C<$response> to the return value of
+
+    Tags::SingleTag::get( { name => 'perl' } );
+
+=head3 Plack::Request
+
+When C<dispatch()> is called with a L<Plack::Request> object, the path and
+method are determined automatically; and the object is passed as the second
+argument to the dispatcher. For example:
+    
+    $dispatch->add( '/tag/#name:slug', 'Tags::SingleTag' );
+    
+    # $env contains the environment of an HTTP DELETE 
+    # request on /tag/perl
+    my $request  = Plack::Request->new( $env );
+    my $response = $dispatch->dispatch( $request );
+
+would set C<$response> to the return value of
+
+    Tags::SingleTag::delete( { name => 'perl' }, $request );
 
 =head2 url( I<handler>, I<$arguments> )
 
@@ -228,7 +271,7 @@ you can pass them as an arrayref (or hashref if they are named captures).
 
 The I<$arguments> are tested to ensure they would match. If they would not,
 an L<Ouch> exception is thrown. This can be caught in your code like so:
-    
+
     use Ouch qw( :traditional );
     
     ...
@@ -238,7 +281,6 @@ an L<Ouch> exception is thrown. This can be caught in your code like so:
     if ( catch 'wrong_input' ) {
         # handle errors
     }
-    
 
 =head1 EXCEPTIONS
 
