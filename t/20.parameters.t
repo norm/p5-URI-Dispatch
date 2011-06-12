@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More      tests => 47;
+use Test::More      tests => 55;
 use URI::Dispatch;
 
 
@@ -164,4 +164,28 @@ use URI::Dispatch;
     
     ( $handler, $captures ) = $dispatch->handler( '/bookmark/no_underscore' );
     ok( !defined $handler );
+}
+{
+    my $dispatch = URI::Dispatch->new();
+    $dispatch->add( '/#*', 'anything' );
+    
+    my( $handler, $captures ) = $dispatch->handler( '/' );
+    ok( !defined $handler );
+    ok( !defined $captures );
+    
+    ( $handler, $captures ) = $dispatch->handler( '/some/url' );
+    ok( $handler eq 'anything' );
+    is_deeply( $captures, [ 'some/url' ] );
+}
+{
+    my $dispatch = URI::Dispatch->new();
+    $dispatch->add( '#*', 'anything' );
+    
+    my( $handler, $captures ) = $dispatch->handler( '/' );
+    ok( $handler eq 'anything' );
+    is_deeply( $captures, [ '/' ] );
+    
+    ( $handler, $captures ) = $dispatch->handler( '/some/url' );
+    ok( $handler eq 'anything' );
+    is_deeply( $captures, [ '/some/url' ] );
 }
