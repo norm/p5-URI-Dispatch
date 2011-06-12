@@ -6,6 +6,7 @@ class URI::Dispatch::Route {
     
     use constant POSITIONAL_PARAMS => 1;
     use constant NAMED_PARAMS      => 2;
+    
     has path => (
         isa      => 'Str',
         is       => 'ro',
@@ -22,6 +23,7 @@ class URI::Dispatch::Route {
         lazy    => 1,
         builder => 'build_match',
     );
+    
     my $STRIP_ARGS = qr{
         ^
             (?:
@@ -70,8 +72,10 @@ class URI::Dispatch::Route {
         while ( $path =~ s{$STRIP_ARGS}{}x ) {
             my %arg = %+;
             
-            $arg{'before'} =~ s{([^\w])}{\\$1}g;
-            $match .= $arg{'before'};
+            if ( defined $arg{'before'} ) {
+                $arg{'before'} =~ s{([^\w])}{\\$1}g;
+                $match .= $arg{'before'};
+            }
             
             next
                 unless defined $arg{'anything'}

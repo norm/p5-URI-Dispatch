@@ -5,7 +5,7 @@ class URI::Dispatch {
     use Ouch        qw( :traditional );
     use URI::Dispatch::Route;
     use version;
-    our $VERSION = qv( 1.0 );
+    our $VERSION = qv( 1.1 );
     
     has routes => (
         isa     => 'HashRef',
@@ -25,7 +25,7 @@ class URI::Dispatch {
             );
         $self->routes->{ $handler } = $route;
     }
-    method dispatch ( $argument ) {
+    method dispatch ( $argument, @extra_args ) {
         my $method = 'get';
         my $path   = $argument;
         my $request;
@@ -42,9 +42,18 @@ class URI::Dispatch {
             unless defined $handler;
         
         my $sub = "${handler}::${method}";
+        my @args;
         
-        no strict 'refs';
-        return $sub->( $options, $request );
+        push @args, @extra_args
+            if @extra_args;
+        push @args, $request
+            if defined $request;
+        push @args, $options;
+        
+        {
+            no strict 'refs';
+            return $sub->( @args );
+        }
     }
     method handler ( $path ) {
         foreach my $handler ( keys %{ $self->routes } ) {
@@ -63,6 +72,8 @@ class URI::Dispatch {
         
         return $route->reverse_path( $args );
     }
+
+=pod
 
 =head1 NAME
 
@@ -224,7 +235,7 @@ would return C<$captures> set to:
         title => 'awesome-article',
     }
 
-=head2 dispatch( I<path or request> )
+=head2 dispatch( I<path or request>, [ ... ] )
 
 Call the handler that matches the given argument, which can either be a
 simple string that represents a path, or it can be a L<Plack::Request>
@@ -233,34 +244,37 @@ object.
 The handler is interpreted as a class, and the HTTP method is the subroutine
 within the class to call.
 
+Any extra arguments to C<dispatch()> are passed to the handler routine first,
+then the reference to the array of captures or hash of named captures.
+
 =head3 path string
 
 When C<dispatch()> is called with a simple string, the method is assumed
 to be an HTTP GET. For example:
  
     $dispatch->add( '/tag/#name:slug', 'Tags::SingleTag' );
-    my $response = $dispatch->dispatch( '/tag/perl' );
+    my $response = $dispatch->dispatch( '/tag/perl', $obj );
 
 would set C<$response> to the return value of
 
-    Tags::SingleTag::get( { name => 'perl' } );
+    Tags::SingleTag::get( $obj, { name => 'perl' } );
 
 =head3 Plack::Request
 
 When C<dispatch()> is called with a L<Plack::Request> object, the path and
-method are determined automatically; and the object is passed as the second
-argument to the dispatcher. For example:
+method are determined automatically; and the object is passed to the handler
+before the captures, but after any extra arguments to dispatch(). For example:
     
     $dispatch->add( '/tag/#name:slug', 'Tags::SingleTag' );
     
     # $env contains the environment of an HTTP DELETE 
     # request on /tag/perl
     my $request  = Plack::Request->new( $env );
-    my $response = $dispatch->dispatch( $request );
+    my $response = $dispatch->dispatch( $request, $obj );
 
 would set C<$response> to the return value of
 
-    Tags::SingleTag::delete( { name => 'perl' }, $request );
+    Tags::SingleTag::delete( $obj, $request, { name => 'perl' } );
 
 =head2 url( I<handler>, I<$arguments> )
 
