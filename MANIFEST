@@ -1,8 +1,9 @@
-README
-MANIFEST
-Makefile.PL
+Changes
 lib/URI/Dispatch.pm
 lib/URI/Dispatch/Route.pm
+Makefile.PL
+MANIFEST
+README
 t/00.use.t
 t/01.new.t
 t/10.match.t
@@ -12,4 +13,7 @@ t/30.grouping.t
 t/50.build.t
 t/55.build_check.t
 t/dispatch.t
+t/dispatch_args.t
+t/ordering.t
 t/plack.t
+t/plack_args.t
