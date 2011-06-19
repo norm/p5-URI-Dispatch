@@ -1,6 +1,6 @@
 use Modern::Perl;
 use Ouch                qw( :traditional );
-use Test::More          tests => 16;
+use Test::More          tests => 18;
 use URI::Dispatch;
 
 
@@ -14,6 +14,7 @@ $dispatch->add( '/category/#name:slug',         'category' );
 $dispatch->add( '[/#slug]/section/[#slug]',     'section'  );
 $dispatch->add( '/tag/#tag:slug[/#sub:slug]',   'tag'      );
 $dispatch->add( '/list/#letter:([a-z])',        'az-page'  );
+$dispatch->add( '/#0[page-#id/]',               'paged'    );
 
 # static url
 {
@@ -66,6 +67,15 @@ $dispatch->add( '/list/#letter:([a-z])',        'az-page'  );
 {
     my $url = $dispatch->url( 'article', {} );
     ok( $url eq '/article/' );
+}
+
+# empty parameters
+{
+    my $url = $dispatch->url( 'paged' );
+    ok( $url eq '/' );
+    
+    $url = $dispatch->url( 'paged', [ 5 ] );
+    ok( $url eq '/page-5/' );
 }
 
 # named mixed parameters

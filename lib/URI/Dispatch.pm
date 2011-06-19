@@ -189,6 +189,11 @@ matches hour, minute and second separated by any of colons, periods or dashes
 
 matches anything
 
+=item B<0>
+
+matches nothing, an empty match; useful for binding to things like homepage
+matches with optional parameters (eg. '/#0[page-#id/]').
+
 =item (I<regexp>)
 
 matches a custom regular expression

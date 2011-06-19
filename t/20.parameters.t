@@ -1,5 +1,5 @@
 use Modern::Perl;
-use Test::More      tests => 55;
+use Test::More      tests => 59;
 use URI::Dispatch;
 
 
@@ -188,4 +188,16 @@ use URI::Dispatch;
     ( $handler, $captures ) = $dispatch->handler( '/some/url' );
     ok( $handler eq 'anything' );
     is_deeply( $captures, [ '/some/url' ] );
+}
+{
+    my $dispatch = URI::Dispatch->new();
+    $dispatch->add( '/#0[page-#id/]', 'homepage' );
+    
+    my( $handler, $captures ) = $dispatch->handler( '/' );
+    ok( $handler eq 'homepage' );
+    is_deeply( $captures, [] );
+    
+    ( $handler, $captures ) = $dispatch->handler( '/page-1/' );
+    ok( $handler eq 'homepage' );
+    is_deeply( $captures, [ '1' ] );
 }
