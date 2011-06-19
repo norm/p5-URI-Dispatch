@@ -12,9 +12,17 @@ class URI::Dispatch {
         is      => 'ro',
         builder => 'build_routes',
     );
+    has routes_ordered => (
+        isa     => 'ArrayRef',
+        is      => 'ro',
+        builder => 'build_routes_ordered',
+    );
     
     method build_routes {
         return {};
+    }
+    method build_routes_ordered {
+        return [];
     }
     
     
@@ -23,7 +31,13 @@ class URI::Dispatch {
                 path => $path,
                 handler => $handler
             );
+        
         $self->routes->{ $handler } = $route;
+        
+        push @{ $self->routes_ordered }, {
+            handler => $handler,
+            route   => $route,
+        };
     }
     method dispatch ( $argument, @extra_args ) {
         my $method = 'get';
@@ -56,8 +70,9 @@ class URI::Dispatch {
         }
     }
     method handler ( $path ) {
-        foreach my $handler ( keys %{ $self->routes } ) {
-            my $route   = $self->routes->{ $handler };
+        foreach my $option ( @{ $self->routes_ordered } ) {
+            my $route   = $option->{'route'};
+            my $handler = $option->{'handler'};
             my $options = $route->match_path( $path );
             
             return( $handler, $options )
@@ -212,14 +227,13 @@ Optional segments cannot be nested.
 
 =head3 Limitations
 
-Adding a new path with the same I<handler> will overwrite the previous path.
-
-Different handlers having the same path will result in unpredictable
-behaviour.
+Different handlers having the same path and multiple handlers having different
+paths will result in unpredictable behaviour.
 
 =head2 handler( I<path> )
 
-Determine which handler should be used for the given I<path>.
+Determine which handler should be used for the given I<path>. The handlers
+are examined in the same order that they were given with C<add()>.
 
 Returns the I<handler> string, and either an array of the captured elements,
 or a hash if the captures were named. For example, this code:
@@ -239,7 +253,8 @@ would return C<$captures> set to:
 
 Call the handler that matches the given argument, which can either be a
 simple string that represents a path, or it can be a L<Plack::Request>
-object.
+object.  The handlers are examined in the same order that they were given 
+with C<add()>.
 
 The handler is interpreted as a class, and the HTTP method is the subroutine
 within the class to call.
