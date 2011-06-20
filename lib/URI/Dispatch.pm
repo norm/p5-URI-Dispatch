@@ -346,6 +346,10 @@ calling B<url()>.
 
 An unknown builtin parameter type was requested.
 
+=item 404
+
+No handler was found for the path when calling C<dispatch()>.
+
 =back
 
 =head1 AUTHOR
