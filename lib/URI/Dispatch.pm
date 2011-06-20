@@ -26,13 +26,19 @@ class URI::Dispatch {
     }
     
     
-    method add ( $path, $handler ) {
-        my $route = URI::Dispatch::Route->new(
-                path => $path,
-                handler => $handler
+    method add ( $path, $handler, $name? ) {
+        my %args = (
+                handler => $handler,
+                path    => $path,
             );
         
-        $self->routes->{ $handler } = $route;
+        $args{'name'} = $name
+            if defined $name;
+        
+        my $key   = $name // $handler;
+        my $route = URI::Dispatch::Route->new( %args );
+        
+        $self->routes->{ $key } = $route;
         
         push @{ $self->routes_ordered }, {
             handler => $handler,
@@ -125,12 +131,13 @@ URI::Dispatch - determine which code to execute based upon path
 
 =head1 METHODS
 
-=head2 add( I<path>, I<handler> )
+=head2 add( I<path>, I<handler> [, I<name>] )
 
-Add I<path> that can be handled by I<handler>. The I<$path> string will be
-matched literally, except for the special markers described below. They have
-been specially chosen because they are not legal URI path characters, so
-should never break your actual chosen URI scheme.
+Add I<path> that can be handled by I<handler>, with an optional symbolic
+I<name>. The I<$path> string will be matched literally, except for the special
+markers described below. They have been specially chosen because they are not
+legal URI path characters, so should never break your actual chosen URI
+scheme.
 
 =over
 
@@ -296,10 +303,12 @@ would set C<$response> to the return value of
 
     Tags::SingleTag::delete( $obj, $request, { name => 'perl' } );
 
-=head2 url( I<handler>, I<$arguments> )
+=head2 url( I<handler or name>, I<$arguments> )
 
-Build a path that I<handler> would accept. If the path contains captures,
-you can pass them as an arrayref (or hashref if they are named captures).
+Build a path that would be accepted by the route specified by I<name> (or
+I<handler> if it wasn't added with a name parameter). When the path contains
+captures, you can pass them as an arrayref (or hashref if they are named
+captures).
 
 The I<$arguments> are tested to ensure they would match. If they would not,
 an L<Ouch> exception is thrown. This can be caught in your code like so:

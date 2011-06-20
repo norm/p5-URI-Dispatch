@@ -23,6 +23,11 @@ class URI::Dispatch::Route {
         lazy    => 1,
         builder => 'build_match',
     );
+    has name => (
+        isa      => 'Str',
+        is       => 'ro',
+        required => 0,
+    );
     
     my $STRIP_ARGS = qr{
         ^

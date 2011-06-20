@@ -6,15 +6,15 @@ use URI::Dispatch;
 
 
 my $dispatch = URI::Dispatch->new();
-$dispatch->add( '/',                            'homepage' );
-$dispatch->add( '/user/#id',                    'profile'  );
-$dispatch->add( '/#year/#month[/#day]',         'calendar' );
-$dispatch->add( '/article/[#title:slug]',       'article'  );
-$dispatch->add( '/category/#name:slug',         'category' );
-$dispatch->add( '[/#slug]/section/[#slug]',     'section'  );
-$dispatch->add( '/tag/#tag:slug[/#sub:slug]',   'tag'      );
-$dispatch->add( '/list/#letter:([a-z])',        'az-page'  );
-$dispatch->add( '/#0[page-#id/]',               'paged'    );
+$dispatch->add( '/',                            'App::Homepage', 'homepage' );
+$dispatch->add( '/user/#id',                    'App::Profile',  'profile'  );
+$dispatch->add( '/#year/#month[/#day]',         'App::Calendar', 'calendar' );
+$dispatch->add( '/article/[#title:slug]',       'App::Article',  'article'  );
+$dispatch->add( '/category/#name:slug',         'App::Category', 'category' );
+$dispatch->add( '[/#slug]/section/[#slug]',     'App::Section',  'section'  );
+$dispatch->add( '/tag/#tag:slug[/#sub:slug]',   'App::Tag',      'tag'      );
+$dispatch->add( '/list/#letter:([a-z])',        'App::AZ'                   );
+$dispatch->add( '/#0[page-#id/]',               'App::Paged'                );
 
 # static url
 {
@@ -59,7 +59,7 @@ $dispatch->add( '/#0[page-#id/]',               'paged'    );
     ok( $url eq '/article/something-tedious' );
 }
 {
-    my $url = $dispatch->url( 'az-page', { letter => 's' } );
+    my $url = $dispatch->url( 'App::AZ', { letter => 's' } );
     ok( $url eq '/list/s' );
 }
 
@@ -71,10 +71,10 @@ $dispatch->add( '/#0[page-#id/]',               'paged'    );
 
 # empty parameters
 {
-    my $url = $dispatch->url( 'paged' );
+    my $url = $dispatch->url( 'App::Paged' );
     ok( $url eq '/' );
     
-    $url = $dispatch->url( 'paged', [ 5 ] );
+    $url = $dispatch->url( 'App::Paged', [ 5 ] );
     ok( $url eq '/page-5/' );
 }
 
