@@ -1,6 +1,6 @@
 use Modern::Perl;
 use Ouch                qw( :traditional );
-use Test::More          tests => 25;
+use Test::More          tests => 31;
 use URI::Dispatch;
 
 {
@@ -83,6 +83,18 @@ use URI::Dispatch;
             is_deeply( $options, [] );
             $run++;
         }
+    }
+    sub post {
+        my $self    = shift;
+        my $options = shift;
+        return unless $self->check_thing;
+        
+        is_deeply(
+            $options,
+            {
+                title => 'the-unbearable-lightness-of-articles',
+            },
+        );
     }
 }
 {
@@ -206,4 +218,32 @@ try { $dispatch->dispatch( '/list/0',           $thing ); };
 ok( catch 404 );
 
 try { $dispatch->dispatch( '/list/ab',          $thing ); };
+ok( catch 404 );
+
+# named arguments instead of a string also works
+$dispatch->dispatch(
+        {
+            # method is assumed to be GET
+            path    => '/',
+        },
+        $thing,
+        'extra'
+    );
+$dispatch->dispatch(
+        {
+            method  => 'get',
+            path    => '/article/the-unbearable-lightness-of-articles',
+            request => $thing,
+        },
+    );
+$dispatch->dispatch(
+        {
+            method  => 'post',
+            path    => '/article/the-unbearable-lightness-of-articles',
+            request => $thing,
+        },
+    );
+
+# an empty path will not be matched by the rules above
+try { $dispatch->dispatch({ method => 'GET' }); };
 ok( catch 404 );

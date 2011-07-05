@@ -55,6 +55,11 @@ class URI::Dispatch {
             $path    = $argument->path;
             $request = $argument;
         }
+        elsif ( 'HASH' eq ref $argument ) {
+            $method  = lc( $argument->{'method'} // 'GET' );
+            $path    = $argument->{'path'} // '';
+            $request = $argument->{'request'};
+        }
         
         my( $handler, $options ) = $self->handler( $path );
         
@@ -290,7 +295,8 @@ would set C<$response> to the return value of
 
 When C<dispatch()> is called with a L<Plack::Request> object, the path and
 method are determined automatically; and the object is passed to the handler
-before the captures, but after any extra arguments to dispatch(). For example:
+before the captures, but after any extra arguments to C<dispatch()>. 
+For example:
     
     $dispatch->add( '/tag/#name:slug', 'Tags::SingleTag' );
     
@@ -302,6 +308,30 @@ before the captures, but after any extra arguments to dispatch(). For example:
 would set C<$response> to the return value of
 
     Tags::SingleTag::delete( $obj, $request, { name => 'perl' } );
+
+=head3 Hash reference
+
+When C<dispatch()> is called with a hash reference, the path, method and
+request objects are taken from that hash. Method defaults to GET if it is
+not specified; request is optional.
+
+As for a L<Plack::Request> object, the request object is passed to the 
+handler before the captures, but after any extra arguments to C<dispatch()>.
+For example:
+
+    $dispatch->add( '/tag/#name:slug', 'Tags::SingleTag' );
+    my $response = $dispatch->dispatch(
+        {
+            path    => '/tag/perl',
+            method  => 'HEAD',
+            request => $request_obj,
+        },
+        'extra_arg',
+    );
+
+would set C<$response> to the return value of
+
+    Tags::SingleTag::head( 'extra_arg', $request_obj, { name => 'perl' } );
 
 =head2 url( I<handler or name>, I<$arguments> )
 
