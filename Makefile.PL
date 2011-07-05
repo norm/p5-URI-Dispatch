@@ -7,9 +7,6 @@ WriteMakefile(
     AUTHOR              => 'Mark Norman Francis <norm@cackhanded.net>',
     VERSION_FROM        => 'lib/URI/Dispatch.pm',
     ABSTRACT_FROM       => 'lib/URI/Dispatch.pm',
-    PL_FILES            => {},
-    EXE_FILES           => [ 
-    ],
     PREREQ_PM => {
         'Modern::Perl'    => 0,
         'version'         => 0,

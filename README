@@ -1,4 +1,4 @@
-URI::Dispatch 1.0
+URI::Dispatch 1.4
 =================
 URI::Dispatch is a dispatcher for handling URI paths, most commonly in a
 web framework.

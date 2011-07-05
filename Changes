@@ -1,5 +1,9 @@
 Revision history for URI::Dispatch.
 
+1.4     Jul 05 2011
+
+    -   Pass path and method as named arguments to dispatch.
+
 1.3     Jun 20 2011
 
     -   Allow shorter nicknames for routes.
